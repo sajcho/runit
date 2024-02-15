@@ -170,11 +170,11 @@ byte_diff.o: byte.h byte_diff.c compile
 byte_rchr.o: byte.h byte_rchr.c compile
 	./compile byte_rchr.c
 
-chkshsgr: chkshsgr.o load
-	./load chkshsgr 
+chkshsgr: chkshsgr.o loadhost
+	./loadhost chkshsgr 
 
-chkshsgr.o: chkshsgr.c compile
-	./compile chkshsgr.c
+chkshsgr.o: chkshsgr.c compilehost
+	./compilehost chkshsgr.c
 
 choose: choose.sh warn-auto.sh
 	rm -f choose
@@ -184,6 +184,11 @@ choose: choose.sh warn-auto.sh
 
 coe.o: coe.c coe.h compile
 	./compile coe.c
+
+compilehost:
+	cat warn-auto.sh > compilehost
+	@echo 'exec cc -c $${1+"$$@"}' >> compilehost
+	chmod 555 compilehost
 
 compile: conf-cc print-cc.sh systype warn-auto.sh
 	rm -f compile
@@ -245,6 +250,15 @@ iopause.h: choose compile iopause.h1 iopause.h2 load trypoll.c
 
 iopause.o: compile iopause.c iopause.h select.h tai.h taia.h uint64.h
 	./compile iopause.c
+
+loadhost:
+	rm -f loadhost
+	@echo > loadhost
+	@echo 'systype="`cat systype`"' >> loadhost
+	@echo 'cat warn-auto.sh' >> loadhost
+	@echo 'main="$$1"; shift' >> loadhost
+	@echo 'exec cc -o "$$main" "$$main".o $${1+"$$@"}' >> loadhost
+	chmod 555 loadhost
 
 load: conf-ld print-ld.sh systype warn-auto.sh
 	rm -f load
